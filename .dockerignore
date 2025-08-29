@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+.git
+# Virtual environments
+venv/
+myenv/
+.env
+
+# Byte-compiled / C extensions
+*.so
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Docker
+.dockerignore
+Dockerfile
+
+# IDE/editor
+.vscode/
+.idea/
+*.swp
