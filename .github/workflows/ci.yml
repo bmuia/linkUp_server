@@ -13,13 +13,13 @@ jobs:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: myuser
+          POSTGRES_PASSWORD: mypassword
+          POSTGRES_DB: mydb
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }}"
+          --health-cmd="pg_isready -U myuser -d mydb"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -36,16 +36,16 @@ jobs:
       - name: Create .env file from GitHub Secrets
         run: |
           echo "DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}" >> .env
-          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
-          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
-          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
+          echo "POSTGRES_USER=myuser" >> .env
+          echo "POSTGRES_PASSWORD=mypassword" >> .env
+          echo "POSTGRES_DB=mydb" >> .env
           echo "POSTGRES_HOST=postgres" >> .env
           echo "POSTGRES_PORT=5432" >> .env
         shell: bash
 
       - name: Wait for Postgres
         run: |
-          until pg_isready -h postgres -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }}; do
+          until pg_isready -h postgres -U myuser -d mydb; do
             echo "Waiting for Postgres..."
             sleep 2
           done
