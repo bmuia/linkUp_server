@@ -6,20 +6,20 @@ on:
       - main
 
 jobs:
-  tests: 
+  tests:
     runs-on: ubuntu-latest
 
     services:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_USER: myuser
-          POSTGRES_PASSWORD: mypassword
-          POSTGRES_DB: mydb
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U myuser -d mydb"
+          --health-cmd="pg_isready -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }}"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -27,16 +27,28 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Create .env file from GitHub Secrets
         run: |
-          echo "DJANGO_SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+          echo "DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}" >> .env
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
+          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
+          echo "POSTGRES_HOST=postgres" >> .env
+          echo "POSTGRES_PORT=5432" >> .env
         shell: bash
+
+      - name: Wait for Postgres
+        run: |
+          until pg_isready -h postgres -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }}; do
+            echo "Waiting for Postgres..."
+            sleep 2
+          done
 
       - name: Install dependencies
         run: |
