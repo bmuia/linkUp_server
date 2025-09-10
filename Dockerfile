@@ -17,4 +17,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Run with Daphne (ASGI for WebSockets)
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "ping_backend.asgi:application"]
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "server.asgi:application"]

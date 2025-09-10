@@ -110,7 +110,7 @@ services:
       ME_CONFIG_BASICAUTH_PASSWORD: ${ME_CONFIG_BASICAUTH_PASSWORD:-secret}
 
 
-  chat_service:
+  server:
     build: .
     depends_on:
       - kafka
