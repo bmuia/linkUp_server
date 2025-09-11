@@ -12,3 +12,7 @@ __pycache__/
 .vscode
 
 *.json
+
+/migrations/
+
+!/migrations/__init__.py
