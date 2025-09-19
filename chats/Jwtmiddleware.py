@@ -1,26 +1,23 @@
 from channels.db import database_sync_to_async
 from django.contrib.auth.models import AnonymousUser
-from rest_framework_simplejwt.tokens import UntypedToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from django.contrib.auth import get_user_model
-from jwt import InvalidTokenError
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
-User = get_user_model()
 jwt_auth = JWTAuthentication()
 
 @database_sync_to_async
 def get_user_from_token(token):
     try:
-        validated_token = UntypedToken(token)
-        user = jwt_auth.get_user(validated_token)
-        return user
-    except InvalidTokenError:
+        validated_token = jwt_auth.get_validated_token(token)
+        return jwt_auth.get_user(validated_token)
+    except (InvalidToken, TokenError):
         return AnonymousUser()
 
 
 class JWTAuthMiddlewareHeader:
     """
-    JWT Auth Middleware that extracts token from 'Authorization' header
+    Custom middleware for Django Channels that authenticates via JWT
+    passed in the 'Authorization' header.
     """
 
     def __init__(self, app):
@@ -29,8 +26,9 @@ class JWTAuthMiddlewareHeader:
     async def __call__(self, scope, receive, send):
         scope["user"] = AnonymousUser()
 
+        # headers come as a list of (key, value) byte pairs
         headers = dict(scope.get("headers", []))
-        auth_header = headers.get(b'authorization', b'').decode()
+        auth_header = headers.get(b"authorization", b"").decode()
 
         if auth_header.startswith("Bearer "):
             token = auth_header.split("Bearer ")[1]
