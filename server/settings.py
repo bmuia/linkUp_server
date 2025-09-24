@@ -5,6 +5,7 @@ from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 from datetime import timedelta
 import dj_database_url
+import certifi
 
 load_dotenv()
 
@@ -87,7 +88,11 @@ else:
 # --- MongoDB ---
 if MODE == "production":
     MONGO_URI = os.getenv("MONGO_DATABASE_URI")
-    mongo_client = MongoClient(MONGO_URI, server_api=ServerApi("1"))
+    mongo_client = MongoClient(MONGO_URI, 
+    server_api=ServerApi("1"),
+    tls=True,
+    tlsCAFile=certifi.where()
+    )
     mongo_db = mongo_client[os.getenv("MONGO_DB_NAME", "chat_db_prod")]
 else:
     MONGO_HOST = os.getenv("MONGO_HOST", "mongo")

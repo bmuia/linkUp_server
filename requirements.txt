@@ -36,4 +36,5 @@ whitenoise
 dj-database-url
 pymongo[srv]
 django-cors-headers
+certifi
 
