@@ -183,6 +183,4 @@ CHANNEL_LAYERS = {
     },
 }
 
-KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092").split(",")
-
 MONGO_DB = mongo_db

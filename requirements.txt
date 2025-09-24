@@ -14,7 +14,6 @@ dnspython==2.7.0
 hyperlink==21.0.0
 idna==3.10
 incremental==24.7.2
-kafka-python==2.2.15
 pillow==11.3.0
 psycopg2==2.9.10
 pyasn1==0.6.1
