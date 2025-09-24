@@ -35,3 +35,4 @@ channels-redis
 whitenoise
 dj-database-url
 pymongo[srv]
+corsheaders
