@@ -1,27 +1,27 @@
 import json
 import logging
 from channels.generic.websocket import AsyncWebsocketConsumer
-from django.conf import settings
 from datetime import datetime
 from server.settings import MONGO_DB
+from asgiref.sync import sync_to_async
 
 logger = logging.getLogger(__name__)
-
 
 class GroupConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         try:
             user = self.scope.get("user")
+
             if not user or not user.is_authenticated:
                 logger.warning("Unauthenticated connection attempt")
                 await self.close(code=4001)
                 return
 
-            # Use a dynamic room if needed (hardcoded to 'chat' here)
+            await sync_to_async(self.set_user_status)(user, "online")
+
             self.room_name = "chat"
             self.room_group_name = f"chat_{self.room_name}"
 
-            # Join WebSocket group
             await self.channel_layer.group_add(
                 self.room_group_name,
                 self.channel_name,
@@ -35,6 +35,10 @@ class GroupConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         try:
+            user = self.scope.get("user")
+            if user and user.is_authenticated:
+                await sync_to_async(self.set_user_status)(user, "offline")
+
             if hasattr(self, "room_group_name"):
                 await self.channel_layer.group_discard(
                     self.room_group_name,
@@ -64,7 +68,7 @@ class GroupConsumer(AsyncWebsocketConsumer):
 
             timestamp = datetime.utcnow()
 
-            # Broadcast message to WebSocket group
+            # Broadcast message
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -75,8 +79,8 @@ class GroupConsumer(AsyncWebsocketConsumer):
                 },
             )
 
-            # Save to MongoDB (direct write)
-            result = MONGO_DB["messages"].insert_one(
+            # ✅ MongoDB is async safe (PyMongo is synchronous but thread-safe)
+            result = await sync_to_async(MONGO_DB["messages"].insert_one)(
                 {
                     "room": self.room_name,
                     "message": message,
@@ -104,3 +108,8 @@ class GroupConsumer(AsyncWebsocketConsumer):
             )
         except Exception as e:
             logger.error(f"Error in chat_message: {e}", exc_info=True)
+
+    # ✅ Helper method for status updates
+    def set_user_status(self, user, status):
+        user.status = status
+        user.save()

@@ -120,3 +120,33 @@ class LogoutView(APIView):
                 {'error': 'Invalid or expired refresh token'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        
+
+class UpdateUserProfileView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    """
+    PUT accounts/v1/user/update/ -> Updates user profile
+
+    what this endpoint does:
+    1. Expects the data to be updated i.e email, username etc
+    2. UPdates user info afer validating it is okay using the serializer
+    3. Returns all user info(updated) and a success message
+    4. Returns and error message if something goes wrong
+    """
+
+
+    def put(self, request):
+        try:
+            user = request.user
+            serializer = UserSerializer(user, data=request.data, partial=True)
+
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                return Response({'message: User profile updated'}, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+    
